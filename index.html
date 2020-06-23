@@ -82,44 +82,95 @@
 
           this.state = {
             activities: [],
+            loading: false,
           };
         }
 
         componentWillMount() {
-          this.setState({ activities: data });
+          this.updateData();
+        }
+
+        updateData() {
+          this.setState(
+            {
+              loading: false,
+              activities: data.sort(() => 0.5 - Math.random()).slice(0, 4),
+            },
+            this.props.onComponentRefresh
+          );
+        }
+
+        componentWillReceiveProps(nextProps) {
+          // Check to see if the requestRefresh prop has changed
+          if (nextProps.requestRefresh === true) {
+            this.setState({ loading: true }, this.updateData);
+          }
         }
 
         render() {
-          const { activities } = this.state;
+          const { loading, activities } = this.state;
 
           return (
             <div className="content">
               <div className="line"></div>
-
+              {/* Show loading message if loading */}
+              {loading && <div>Loading</div>}
               {/* Timeline item */}
               {activities.map((activity) => (
-                <ActivityItem activity={activity} />
+                <ActivityItem key={activity.id} activity={activity} />
               ))}
             </div>
           );
         }
       }
 
-      class App extends React.Component {
+      class Container extends React.Component {
+        constructor(props) {
+          super(props);
+
+          this.state = { refreshing: false };
+        }
+
+        // Bound to the refresh button
+        refresh() {
+          this.setState({ refreshing: true });
+        }
+
+        // Callback on the `Content` component
+        onComponentRefresh() {
+          this.setState({ refreshing: false });
+        }
+
         render() {
+          const { refreshing } = this.state;
           return (
             <div className="notificationsFrame">
               <div className="panel">
-                <Header title="Timeline" />
-                <Content activities={activities} />
+                <Header title="Github activity" />
+                <Content
+                  onComponentRefresh={this.onComponentRefresh.bind(this)}
+                  requestRefresh={refreshing}
+                />
+                <Footer>
+                  <button onClick={this.refresh.bind(this)}>
+                    <i className="fa fa-refresh" />
+                    Refresh
+                  </button>
+                </Footer>
               </div>
             </div>
           );
         }
       }
 
+      class Footer extends React.Component {
+        render() {
+          return <div className="footer">{this.props.children}</div>;
+        }
+      }
+
       var mount = document.querySelector("#app");
-      ReactDOM.render(<Content />, mount);
+      ReactDOM.render(<Container />, mount);
     </script>
   </body>
 </html>
