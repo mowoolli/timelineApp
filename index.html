@@ -82,6 +82,10 @@
         title: PropTypes.string,
       };
 
+      Header.defaultProps = {
+        title: "Github activity",
+      };
+
       class Content extends React.Component {
         constructor(props) {
           super(props);
@@ -152,7 +156,7 @@
           return (
             <div className="notificationsFrame">
               <div className="panel">
-                <Header title="Github activity" />
+                <Header />
                 <Content
                   onComponentRefresh={this.onComponentRefresh.bind(this)}
                   requestRefresh={refreshing}
