@@ -69,14 +69,6 @@
         }
 
         render() {
-          //Classes to add to the <input /> element
-          let searchInputclasses = ["searchInput"];
-
-          // Update the class array if the search is visible
-          if (this.state.searchVisible) {
-            searchInputclasses.push("active");
-          }
-
           return (
             <div className="header">
               <div className="menuIcon">
@@ -87,10 +79,9 @@
 
               <span className="title">{this.props.title}</span>
 
-              <input
-                type="text"
-                className={searchInputclasses.join(" ")}
-                placeholder="Search ..."
+              <SearchForm
+                searchVisible={this.state.searchVisible}
+                onSubmit={this.props.onSearch}
               />
 
               <div
@@ -108,6 +99,59 @@
 
       Header.defaultProps = {
         title: "Github activity",
+      };
+
+      class SearchForm extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = { searchText: "" };
+        }
+
+        updateSearchInput(e) {
+          const val = e.target.value;
+          this.setState({ searchText: val });
+        }
+
+        submitForm(e) {
+          // Prevent reload page from default submit behavior
+          e.preventDefault();
+          // Call the callback with the search text
+          this.props.onSubmit(this.state.searchText);
+        }
+
+        render() {
+          const { searchVisible } = this.props;
+          // CSS classes to add to the <input /> element
+          let searchClasses = ["searchInput"];
+
+          // Update the CSS class array if the search is visible
+          if (searchVisible) {
+            searchClasses.push("active");
+          }
+
+          return (
+            <form onSubmit={this.submitForm.bind(this)}>
+              <input
+                type="search"
+                // Passing the value prop would make this a controlled component
+                // value={this.state.searchText}
+                className={searchClasses.join(" ")}
+                onChange={this.updateSearchInput.bind(this)}
+                placeholder="Search..."
+              />
+            </form>
+          );
+        }
+      }
+
+      SearchForm.propTypes = {
+        searchVisible: PropTypes.bool,
+        onSubmit: PropTypes.func.isRequired,
+      };
+
+      SearchForm.defaultProps = {
+        searchVisible: false,
+        onSubmit: () => {},
       };
 
       class Content extends React.Component {
