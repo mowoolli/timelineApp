@@ -95,6 +95,7 @@
 
       Header.propTypes = {
         title: PropTypes.string,
+        onSearch: PropTypes.func,
       };
 
       Header.defaultProps = {
@@ -172,10 +173,24 @@
           this.setState(
             {
               loading: false,
-              activities: data.sort(() => 0.5 - Math.random()).slice(0, 4),
+              // activities: data.sort(() => 0.5 - Math.random()).slice(0, 4),
+              activities: data,
             },
             this.props.onComponentRefresh
           );
+        }
+
+        handleSearch(val) {
+          // Reset the data if the search text is empty
+          if (val === "") {
+            this.setState({ activities: data });
+          } else {
+            const { activities } = this.state;
+            const filtered = activities.filter(
+              (a) => a.actor && a.actor.login.match(val)
+            );
+            this.setState({ activities: filtered });
+          }
         }
 
         componentWillReceiveProps(nextProps) {
@@ -189,14 +204,17 @@
           const { loading, activities } = this.state;
 
           return (
-            <div className="content">
-              <div className="line"></div>
-              {/* Show loading message if loading */}
-              {loading && <div>Loading</div>}
-              {/* Timeline item */}
-              {activities.map((activity) => (
-                <ActivityItem key={activity.id} activity={activity} />
-              ))}
+            <div>
+              <Header onSearch={this.handleSearch.bind(this)} />
+              <div className="content">
+                <div className="line"></div>
+                {/* Show loading message if loading */}
+                {loading && <div>Loading</div>}
+                {/* Timeline item */}
+                {activities.map((activity) => (
+                  <ActivityItem key={activity.id} activity={activity} />
+                ))}
+              </div>
             </div>
           );
         }
@@ -224,7 +242,6 @@
           return (
             <div className="notificationsFrame">
               <div className="panel">
-                <Header />
                 <Content
                   onComponentRefresh={this.onComponentRefresh.bind(this)}
                   requestRefresh={refreshing}
